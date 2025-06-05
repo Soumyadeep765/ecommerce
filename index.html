@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMARTBAZAR - Online shopping platform</title>
+    <link rel="icon" href="https://images.unsplash.com/photo-1607082349566-187342175e2f?w=500&auto=format&fit=crop&q=60">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2874f0',
+                        secondary: '#fb641b',
+                        accent: '#ff9f00',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Swiper JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <!-- AOS - Animate On Scroll -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Lodash - Utility functions -->
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <style>
+        .search-box {
+            box-shadow: 0 2px 4px 0 rgba(0,0,0,.23);
+        }
+        .product-card:hover {
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        .cart-panel {
+            transition: all 0.3s ease;
+        }
+        .animate-bounce {
+            animation: bounce 0.5s;
+        }
+        .bg-gradient{
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .product-slider {
+            scroll-behavior: smooth;
+        }
+        .product-slider::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Top Header -->
+    <div class="bg-primary text-white py-1 px-4 text-sm hidden md:block">
+        <div class="container mx-auto flex justify-between">
+            <div class="flex space-x-4">
+                <a href="#" class="hover:underline"><i class="bi bi-person-plus mr-1"></i>Become a Seller</a>
+                <a href="#" class="hover:underline"><i class="bi bi-headset mr-1"></i>Customer Care</a>
+            </div>
+            <div class="flex space-x-4">
+                <a href="#" class="hover:underline"><i class="bi bi-person mr-1"></i>Login</a>
+                <a href="#" class="hover:underline" id="cart-toggle"><i class="bi bi-cart2 mr-1"></i>Cart</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="#" class="text-2xl font-bold text-primary flex items-center">
+                        <i class="bi bi-shop mr-2"></i>SMARTBAZAR
+                    </a>
+                </div>
+
+                <!-- Search Bar - Hidden on mobile -->
+                <div class="hidden md:block w-1/2 mx-4">
+                    <div class="relative flex search-box rounded">
+                        <input type="text" id="search-input" placeholder="Search for products..." 
+                            class="w-full px-4 py-2 rounded-l border border-gray-300 focus:outline-none">
+                        <button id="search-button" class="bg-accent text-white px-6 py-2 rounded-r">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- User Actions - Hidden on mobile -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <div class="dropdown relative">
+                        <button class="flex items-center space-x-1">
+                            <span>More</span>
+                            <i class="bi bi-chevron-down text-xs"></i>
+                        </button>
+                        <div class="dropdown-menu absolute hidden bg-white shadow-lg rounded mt-2 py-2 w-48 right-0">
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-100"><i class="bi bi-bell mr-2"></i>Notification</a>
+                            <a href="#" id="wishlist-toggle" class="block px-4 py-2 hover:bg-gray-100"><i class="bi bi-heart mr-2"></i>Wishlist</a>
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-100"><i class="bi bi-box-seam mr-2"></i>Orders</a>
+                        </div>
+                    </div>
+                    <a href="#" class="flex flex-col items-center relative" id="desktop-cart-toggle">
+                        <i class="bi bi-cart3 text-2xl"></i>
+                        <span class="text-xs">Cart</span>
+                        <span id="cart-count" class="absolute -mt-2 ml-4 bg-secondary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">0</span>
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden text-gray-600" id="mobile-menu-button">
+                    <i class="bi bi-list text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Search - Visible only on mobile -->
+            <div class="mt-3 md:hidden">
+                <div class="relative flex search-box rounded">
+                    <input type="text" id="mobile-search-input" placeholder="Search for products..." 
+                        class="w-full px-4 py-2 rounded-l border border-gray-300 focus:outline-none">
+                    <button id="mobile-search-button" class="bg-accent text-white px-4 py-2 rounded-r">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="hidden bg-white border-t md:hidden" id="mobile-menu">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#" class="py-2 flex items-center"><i class="bi bi-house-door mr-2"></i>Home</a>
+                <a href="#" class="py-2 flex items-center"><i class="bi bi-grid mr-2"></i>Categories</a>
+                <a href="#" class="py-2 flex items-center" id="mobile-wishlist-toggle"><i class="bi bi-heart mr-2"></i>Wishlist</a>
+                <a href="#" class="py-2 flex items-center" id="mobile-cart-toggle"><i class="bi bi-cart3 mr-2"></i>Cart <span id="mobile-cart-count" class="ml-auto bg-secondary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">0</span></a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Categories -->
+    <div class="bg-white shadow-sm hidden md:block">
+        <div class="container mx-auto px-4 py-2 flex space-x-8 overflow-x-auto">
+            <a href="#" class="whitespace-nowrap hover:text-primary"><i class="bi bi-phone mr-1"></i>Electronics</a>
+            <a href="#" class="whitespace-nowrap hover:text-primary"><i class="bi bi-bag mr-1"></i>Fashion</a>
+            <a href="#" class="whitespace-nowrap hover:text-primary"><i class="bi bi-house mr-1"></i>Home</a>
+            <a href="#" class="whitespace-nowrap hover:text-primary"><i class="bi bi-gem mr-1"></i>Jewelry</a>
+            <a href="#" class="whitespace-nowrap hover:text-primary"><i class="bi bi-controller mr-1"></i>Gaming</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Hero Banner Swiper -->
+        <div class="swiper hero-swiper mb-8">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="bg-gradient text-white rounded-lg p-8 h-[400px] flex items-center">
+                        <div class="w-1/2" data-aos="fade-right">
+                            <h1 class="text-4xl font-bold mb-4">Summer Sale!</h1>
+                            <p class="text-lg mb-6">Up to 50% off on selected items</p>
+                            <button class="bg-white text-primary px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition-colors">
+                                Shop Now
+                            </button>
+                        </div>
+                        <div class="w-1/2 flex justify-center" data-aos="fade-left">
+                            <img src="https://images.unsplash.com/photo-1607082349566-187342175e2f?w=500&auto=format&fit=crop&q=60" alt="Summer Sale" class="rounded-lg shadow-lg max-h-[300px] object-cover">
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="bg-[#4A90E2] text-white rounded-lg p-8 h-[400px] flex items-center">
+                        <div class="w-1/2" data-aos="fade-right">
+                            <h1 class="text-4xl font-bold mb-4">New Arrivals</h1>
+                            <p class="text-lg mb-6">Discover the latest trends</p>
+                            <button class="bg-white text-[#4A90E2] px-6 py-3 rounded-full font-medium hover:bg-gray-100 transition-colors">
+                                Explore Now
+                            </button>
+                        </div>
+                        <div class="w-1/2 flex justify-center" data-aos="fade-left">
+                            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=500&auto=format&fit=crop&q=60" alt="New Arrivals" class="rounded-lg shadow-lg max-h-[300px] object-cover">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+        </div>
+
+        <!-- Featured Categories -->
+        <section class="mb-12" data-aos="fade-up">
+            <h2 class="text-2xl font-bold mb-6">Shop by Category</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="category-card bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+                    <div class="relative h-48">
+                        <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=500&auto=format&fit=crop&q=60" alt="Electronics" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                            <h3 class="text-white text-xl font-bold">Electronics</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-card bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+                    <div class="relative h-48">
+                        <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=500&auto=format&fit=crop&q=60" alt="Fashion" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                            <h3 class="text-white text-xl font-bold">Fashion</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-card bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+                    <div class="relative h-48">
+                        <img src="https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=500&auto=format&fit=crop&q=60" alt="Home & Living" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                            <h3 class="text-white text-xl font-bold">Home & Living</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="category-card bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
+                    <div class="relative h-48">
+                        <img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&auto=format&fit=crop&q=60" alt="Beauty" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                            <h3 class="text-white text-xl font-bold">Beauty</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Brands -->
+        <section class="mb-12" data-aos="fade-up">
+            <h2 class="text-2xl font-bold mb-6">Featured Brands</h2>
+            <div class="swiper brands-swiper">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                        <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-center h-32">
+                            <img src="https://dummyimage.com/200x100/2874f0/ffffff&text=Brand+1" alt="Brand 1" class="max-h-16">
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-center h-32">
+                            <img src="https://dummyimage.com/200x100/ff9f00/ffffff&text=Brand+2" alt="Brand 2" class="max-h-16">
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-center h-32">
+                            <img src="https://dummyimage.com/200x100/fb641b/ffffff&text=Brand+3" alt="Brand 3" class="max-h-16">
+                        </div>
+                    </div>
+                    <div class="swiper-slide">
+                        <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-center h-32">
+                            <img src="https://dummyimage.com/200x100/2874f0/ffffff&text=Brand+4" alt="Brand 4" class="max-h-16">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Deals Section -->
+        <section class="mb-12" data-aos="fade-up">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Today's Deals</h2>
+                <div class="flex items-center space-x-4">
+                    <button id="view-all-deals" class="text-primary hover:underline">View All</button>
+                    <div class="flex space-x-2">
+                        <button class="px-3 py-1 border rounded-l bg-gray-100" id="deals-prev">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <button class="px-3 py-1 border rounded-r bg-gray-100" id="deals-next">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper deals-section">
+                <div class="swiper-wrapper" id="deals-section">
+                    <!-- Deals will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section class="mb-12" data-aos="fade-up">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Trending Products</h2>
+                <div class="flex space-x-2">
+                    <button class="px-3 py-1 border rounded-l bg-gray-100" id="products-prev">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button class="px-3 py-1 border rounded-r bg-gray-100" id="products-next">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="swiper products-swiper">
+                <div class="swiper-wrapper" id="product-grid">
+                    <!-- Products will be loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter Section -->
+        <section class="mb-12 bg-primary rounded-lg p-8 text-white" data-aos="fade-up">
+            <div class="max-w-2xl mx-auto text-center">
+                <h2 class="text-3xl font-bold mb-4">Subscribe to Our Newsletter</h2>
+                <p class="mb-6">Stay updated with our latest deals and products</p>
+                <form class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <input type="email" placeholder="Enter your email" 
+                        class="px-4 py-2 rounded-full text-gray-800 w-full sm:w-96 focus:outline-none">
+                    <button type="submit" 
+                        class="bg-secondary hover:bg-orange-700 text-white px-8 py-2 rounded-full transition-colors">
+                        Subscribe
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="mb-12" data-aos="fade-up">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="feature-card p-6 bg-white rounded-lg shadow-sm text-center">
+                    <i class="bi bi-truck text-4xl text-primary mb-4"></i>
+                    <h3 class="font-bold mb-2">Free Shipping</h3>
+                    <p class="text-gray-600">On orders over $50</p>
+                </div>
+                <div class="feature-card p-6 bg-white rounded-lg shadow-sm text-center">
+                    <i class="bi bi-shield-check text-4xl text-primary mb-4"></i>
+                    <h3 class="font-bold mb-2">Secure Payment</h3>
+                    <p class="text-gray-600">100% secure payment</p>
+                </div>
+                <div class="feature-card p-6 bg-white rounded-lg shadow-sm text-center">
+                    <i class="bi bi-arrow-counterclockwise text-4xl text-primary mb-4"></i>
+                    <h3 class="font-bold mb-2">Easy Returns</h3>
+                    <p class="text-gray-600">30 days return policy</p>
+                </div>
+                <div class="feature-card p-6 bg-white rounded-lg shadow-sm text-center">
+                    <i class="bi bi-headset text-4xl text-primary mb-4"></i>
+                    <h3 class="font-bold mb-2">24/7 Support</h3>
+                    <p class="text-gray-600">Dedicated support</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Cart Panel - Hidden by default -->
+    <div class="hidden lg:block fixed top-0 right-0 h-full w-96 bg-white shadow-lg z-50 transform translate-x-full transition-transform duration-300" id="desktop-cart-panel">
+        <div class="p-4 h-full flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold flex items-center">
+                    <i class="bi bi-cart3 mr-2"></i> My Cart
+                    <span class="ml-2 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs" id="sidebar-cart-count">0</span>
+                </h3>
+                <button class="text-gray-500 hover:text-gray-700" id="close-desktop-cart">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto py-4" id="cart-items">
+                <!-- Cart items will appear here -->
+                <div class="text-center py-8 text-gray-500" id="empty-cart-message">
+                    <i class="bi bi-cart-x text-4xl mb-2"></i>
+                    <p>Your cart is empty</p>
+                </div>
+            </div>
+            <div class="border-t pt-3 hidden" id="cart-summary">
+                <div class="flex justify-between mb-2">
+                    <span>Subtotal:</span>
+                    <span id="cart-subtotal">$0.00</span>
+                </div>
+                <div class="flex justify-between mb-2">
+                    <span>Shipping:</span>
+                    <span>FREE</span>
+                </div>
+                <div class="flex justify-between font-bold text-lg">
+                    <span>Total:</span>
+                    <span id="cart-total">$0.00</span>
+                </div>
+                <button class="w-full bg-secondary text-white py-2 rounded mt-4 hover:bg-orange-700">
+                    Proceed to Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Cart Panel - Slides in from right -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden" id="mobile-cart-overlay"></div>
+    <div class="fixed top-0 right-0 h-full w-4/5 sm:w-2/3 md:w-1/2 bg-white z-50 shadow-lg transform translate-x-full transition-transform duration-300" id="mobile-cart-panel">
+        <div class="p-4 h-full flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold flex items-center">
+                    <i class="bi bi-cart3 mr-2"></i> My Cart
+                    <span class="ml-2 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs" id="mobile-panel-cart-count">0</span>
+                </h3>
+                <button class="text-gray-500 hover:text-gray-700" id="close-mobile-cart">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto py-4" id="mobile-cart-items">
+                <!-- Cart items will appear here -->
+            </div>
+            <div class="border-t pt-3">
+                <div class="flex justify-between mb-2">
+                    <span>Total:</span>
+                    <span id="mobile-cart-total">$0.00</span>
+                </div>
+                <button class="w-full bg-secondary text-white py-2 rounded mt-4 hover:bg-orange-700">
+                    Proceed to Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wishlist Modal -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden" id="wishlist-modal">
+        <div class="bg-white w-full max-w-2xl mx-auto mt-20 rounded-lg shadow-lg">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 class="font-bold flex items-center">
+                    <i class="bi bi-heart-fill text-red-500 mr-2"></i> My Wishlist
+                </h3>
+                <button class="text-gray-500 hover:text-gray-700" id="close-wishlist-modal">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 max-h-[60vh] overflow-y-auto" id="wishlist-content">
+                <!-- Wishlist items will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick View Modal -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden" id="quick-view-modal">
+        <div class="bg-white w-full max-w-4xl mx-auto mt-20 rounded-lg shadow-lg">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 class="font-bold">Quick View</h3>
+                <button class="text-gray-500 hover:text-gray-700" id="close-quick-view">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex items-center justify-center bg-gray-50 rounded-lg p-4">
+                    <img src="" alt="" class="max-h-96 object-contain product-image">
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold mb-2 product-title"></h2>
+                    <div class="flex items-center mb-2">
+                        <div class="flex text-yellow-400 product-rating"></div>
+                        <span class="text-gray-500 text-sm ml-1 rating-count"></span>
+                    </div>
+                    <div class="text-2xl font-bold text-primary mb-4 product-price"></div>
+                    <p class="text-gray-600 mb-6 product-description"></p>
+                    <button class="w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors add-to-cart">
+                        <i class="bi bi-cart-plus mr-2"></i>Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center" id="loading-overlay">
+        <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+            <div class="animate-spin text-4xl text-primary mb-4">
+                <i class="bi bi-arrow-repeat"></i>
+            </div>
+            <p class="text-gray-600">Loading...</p>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center hidden">
+        <i class="bi bi-check-circle mr-2"></i>
+        <span id="notification-message"></span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h4 class="text-lg font-bold mb-4">About Us</h4>
+                    <p class="text-gray-400">Your one-stop shop for all your needs. Quality products at affordable prices.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Products</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Deals</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Customer Service</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Help Center</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Returns</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Shipping Info</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">FAQs</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Connect With Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white text-2xl"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-2xl"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-2xl"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white text-2xl"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 SMARTBAZAR. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- App Script -->
+    <script>
+    $(document).ready(function() {
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+
+        // Initialize GSAP ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+
+        // GSAP Animations
+        gsap.from(".feature-card", {
+            scrollTrigger: {
+                trigger: ".feature-card",
+                start: "top bottom",
+                toggleActions: "play none none reverse"
+            },
+            y: 50,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.2
+        });
+
+        // Initialize Swiper for Hero Banner
+        const heroSwiper = new Swiper('.hero-swiper', {
+            loop: true,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            effect: 'fade',
+            fadeEffect: {
+                crossFade: true
+            },
+            speed: 1000,
+        });
+
+        // Initialize Swiper for Brands
+        const brandsSwiper = new Swiper('.brands-swiper', {
+            slidesPerView: 2,
+            spaceBetween: 20,
+            loop: true,
+            autoplay: {
+                delay: 3000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 3,
+                },
+                768: {
+                    slidesPerView: 4,
+                },
+            },
+            speed: 800,
+        });
+
+        // Initialize Swiper for Products
+        const productsSwiper = new Swiper('.products-swiper', {
+            slidesPerView: 1,
+            spaceBetween: 20,
+            loop: true,
+            autoplay: {
+                delay: 3000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true
+            },
+            navigation: {
+                nextEl: '#products-next',
+                prevEl: '#products-prev',
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 2,
+                },
+                768: {
+                    slidesPerView: 3,
+                },
+                1024: {
+                    slidesPerView: 4,
+                },
+            },
+            speed: 800,
+            grabCursor: true,
+            watchSlidesProgress: true,
+        });
+
+        // Initialize Swiper for Deals
+        const dealsSwiper = new Swiper('.deals-section', {
+            slidesPerView: 2,
+            spaceBetween: 15,
+            loop: true,
+            autoplay: {
+                delay: 2500,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true
+            },
+            navigation: {
+                nextEl: '#deals-next',
+                prevEl: '#deals-prev',
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 3,
+                },
+                768: {
+                    slidesPerView: 4,
+                },
+                1024: {
+                    slidesPerView: 5,
+                },
+            },
+            speed: 600,
+            grabCursor: true,
+        });
+
+        // Add hover pause functionality
+        $('.products-swiper, .deals-section').hover(
+            function() {
+                const swiper = $(this)[0].swiper;
+                swiper.autoplay.stop();
+            },
+            function() {
+                const swiper = $(this)[0].swiper;
+                swiper.autoplay.start();
+            }
+        );
+
+        // Global variables
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+        let allProducts = [];
+        const CACHE_DURATION = 1000 * 60 * 60; // 1 hour cache
+
+        // Debounce search function using Lodash
+        const debouncedSearch = _.debounce((query) => {
+            searchProducts(query);
+        }, 300);
+
+        $('#search-input, #mobile-search-input').on('input', function() {
+            debouncedSearch($(this).val());
+        });
+
+        // Initialize the page
+        initializeApp();
+        
+        // Initialize app with caching
+        function initializeApp() {
+            showLoadingOverlay();
+            const cachedProducts = localStorage.getItem('cachedProducts');
+            const cacheTimestamp = localStorage.getItem('cacheTimestamp');
+            
+            if (cachedProducts && cacheTimestamp && (Date.now() - parseInt(cacheTimestamp)) < CACHE_DURATION) {
+                allProducts = JSON.parse(cachedProducts);
+                renderProducts();
+                renderDeals();
+                hideLoadingOverlay();
+            } else {
+                fetchProducts();
+            }
+            
+            // Update UI with stored data
+            updateCartCount();
+            updateCartItems();
+            updateWishlistContent();
+        }
+        
+        // Show loading overlay
+        function showLoadingOverlay() {
+            $('#loading-overlay').fadeIn();
+        }
+        
+        // Hide loading overlay
+        function hideLoadingOverlay() {
+            $('#loading-overlay').fadeOut();
+        }
+        
+        // Save to localStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('cart', JSON.stringify(cart));
+            localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        }
+        
+        // Toggle mobile menu
+        $('#mobile-menu-button').click(function() {
+            $('#mobile-menu').slideToggle();
+        });
+        
+        // Toggle cart panels
+        function toggleCartPanel() {
+            // For mobile
+            $('#mobile-cart-overlay').fadeToggle();
+            $('#mobile-cart-panel').toggleClass('translate-x-0');
+            
+            // For desktop
+            $('#desktop-cart-panel').toggleClass('translate-x-0');
+            
+            // Update cart counts
+            updateCartCount();
+            updateCartItems();
+        }
+        
+        // Cart toggle events
+        $('#desktop-cart-toggle, #mobile-cart-toggle, #cart-toggle').click(function(e) {
+            e.preventDefault();
+            toggleCartPanel();
+        });
+        
+        $('#close-desktop-cart, #close-mobile-cart, #mobile-cart-overlay').click(function() {
+            toggleCartPanel();
+        });
+        
+        // Toggle wishlist modal
+        function toggleWishlistModal() {
+            $('#wishlist-modal').fadeToggle();
+            updateWishlistContent();
+        }
+        
+        $('#wishlist-toggle, #mobile-wishlist-toggle').click(function(e) {
+            e.preventDefault();
+            toggleWishlistModal();
+        });
+        
+        $('#close-wishlist-modal').click(function() {
+            toggleWishlistModal();
+        });
+        
+        // Close modals when clicking outside
+        $(document).click(function(e) {
+            if ($(e.target).is('#wishlist-modal')) {
+                toggleWishlistModal();
+            }
+            if ($(e.target).is('#quick-view-modal')) {
+                $('#quick-view-modal').fadeOut();
+            }
+        });
+        
+        // Fetch products with caching
+        function fetchProducts() {
+            showSkeletonLoader();
+            
+            $.ajax({
+                url: 'https://fakestoreapi.com/products?limit=200',
+                method: 'GET',
+                success: function(products) {
+                    allProducts = products;
+                    // Cache the products
+                    localStorage.setItem('cachedProducts', JSON.stringify(products));
+                    localStorage.setItem('cacheTimestamp', Date.now().toString());
+                    
+                    renderProducts();
+                    renderDeals();
+                    hideLoadingOverlay();
+                },
+                error: function() {
+                    $('#product-grid').html('<div class="swiper-slide"><div class="text-center py-8 text-red-500"><i class="bi bi-exclamation-triangle mr-2"></i>Failed to load products</div></div>');
+                    hideLoadingOverlay();
+                }
+            });
+        }
+        
+        // Show skeleton loader
+        function showSkeletonLoader() {
+            const skeletonHTML = Array(4).fill().map(() => `
+                <div class="swiper-slide">
+                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 h-full animate-pulse">
+                        <div class="relative overflow-hidden h-48 bg-gray-200 flex items-center justify-center">
+                            <i class="bi bi-image text-4xl text-gray-400"></i>
+                        </div>
+                        <div class="p-4">
+                            <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                            <div class="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                            <div class="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
+                            <div class="h-10 bg-gray-200 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            $('#product-grid').html(skeletonHTML);
+        }
+        
+        // Search functionality
+        function searchProducts(query) {
+            if (!query.trim()) {
+                renderProducts();
+                return;
+            }
+            
+            const filtered = allProducts.filter(product => 
+                product.title.toLowerCase().includes(query.toLowerCase()) ||
+                product.category.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            renderSearchResults(filtered);
+        }
+        
+        $('#search-button, #mobile-search-button').click(function() {
+            const query = $(this).attr('id') === 'search-button' ? 
+                $('#search-input').val() : $('#mobile-search-input').val();
+            searchProducts(query);
+        });
+        
+        $('#search-input, #mobile-search-input').keypress(function(e) {
+            if (e.which === 13) {
+                searchProducts($(this).val());
+            }
+        });
+        
+        // View all deals
+        $('#view-all-deals').click(function() {
+            renderDeals(); // Show all deals
+        });
+        
+        // Render products
+        function renderProducts() {
+            const productGrid = $('#product-grid');
+            productGrid.empty();
+            
+            if (!allProducts || allProducts.length === 0) {
+                productGrid.html('<div class="swiper-slide"><div class="text-center py-8 text-gray-500">No products available</div></div>');
+                return;
+            }
+            
+            allProducts.forEach(product => {
+                const isInWishlist = wishlist.some(item => item.id === product.id);
+                const wishlistIcon = isInWishlist ? 'bi-heart-fill text-red-500' : 'bi-heart';
+                
+                const productCard = `
+                    <div class="swiper-slide" data-aos="fade-up">
+                        <div class="product-card bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 h-full transform transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                            <div class="relative overflow-hidden h-48 bg-white flex items-center justify-center p-4">
+                                <img src="${product.image}" alt="${product.title}" 
+                                    class="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-110" 
+                                    loading="lazy" 
+                                    onerror="handleImageError(this)">
+                                <div class="absolute top-2 right-2">
+                                    <button class="wishlist-btn bg-white rounded-full p-2 shadow-md hover:text-red-500 transition-colors" data-id="${product.id}">
+                                        <i class="bi ${wishlistIcon}"></i>
+                                    </button>
+                                </div>
+                                <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300">
+                                    <button class="w-full bg-white text-primary px-4 py-2 rounded hover:bg-gray-100 transition-colors quick-view-btn" data-id="${product.id}">
+                                        Quick View
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-medium text-gray-800 mb-1 truncate">${product.title}</h3>
+                                <div class="flex items-center mb-2">
+                                    <div class="flex text-yellow-400">
+                                        ${renderRating(product.rating.rate)}
+                                    </div>
+                                    <span class="text-gray-500 text-xs ml-1">(${product.rating.count})</span>
+                                </div>
+                                <div class="flex items-center mb-3">
+                                    <span class="text-lg font-bold text-gray-900">$${product.price}</span>
+                                    <span class="text-sm text-gray-500 line-through ml-2">$${(product.price * 1.2).toFixed(2)}</span>
+                                    <span class="text-xs bg-green-100 text-green-800 ml-2 px-1 rounded">20% off</span>
+                                </div>
+                                <button class="w-full bg-primary text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors add-to-cart" data-id="${product.id}">
+                                    <i class="bi bi-cart-plus mr-2"></i>Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                productGrid.append(productCard);
+            });
+
+            // Update Swiper
+            if (productsSwiper) {
+                productsSwiper.update();
+            }
+        }
+        
+        // Render search results
+        function renderSearchResults(products) {
+            const productGrid = $('#product-grid');
+            productGrid.empty();
+            
+            if (products.length === 0) {
+                productGrid.html('<div class="swiper-slide"><div class="text-center py-8 text-gray-500">No products found matching your search</div></div>');
+                return;
+            }
+            
+            products.forEach(product => {
+                const isInWishlist = wishlist.some(item => item.id === product.id);
+                const wishlistIcon = isInWishlist ? 'bi-heart-fill text-red-500' : 'bi-heart';
+                
+                const productCard = `
+                    <div class="swiper-slide" data-aos="fade-up">
+                        <div class="product-card bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 h-full transform transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                            <div class="relative overflow-hidden h-48 bg-white flex items-center justify-center p-4">
+                                <img src="${product.image}" alt="${product.title}" 
+                                    class="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-110" 
+                                    onerror="handleImageError(this)">
+                                <div class="absolute top-2 right-2">
+                                    <button class="wishlist-btn bg-white rounded-full p-2 shadow-md hover:text-red-500 transition-colors" data-id="${product.id}">
+                                        <i class="bi ${wishlistIcon}"></i>
+                                    </button>
+                                </div>
+                                <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300">
+                                    <button class="w-full bg-white text-primary px-4 py-2 rounded hover:bg-gray-100 transition-colors quick-view-btn" data-id="${product.id}">
+                                        Quick View
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-medium text-gray-800 mb-1 truncate">${product.title}</h3>
+                                <div class="flex items-center mb-2">
+                                    <div class="flex text-yellow-400">
+                                        ${renderRating(product.rating.rate)}
+                                    </div>
+                                    <span class="text-gray-500 text-xs ml-1">(${product.rating.count})</span>
+                                </div>
+                                <div class="flex items-center mb-3">
+                                    <span class="text-lg font-bold text-gray-900">$${product.price}</span>
+                                    <span class="text-sm text-gray-500 line-through ml-2">$${(product.price * 1.2).toFixed(2)}</span>
+                                    <span class="text-xs bg-green-100 text-green-800 ml-2 px-1 rounded">20% off</span>
+                                </div>
+                                <button class="w-full bg-primary text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors add-to-cart" data-id="${product.id}">
+                                    <i class="bi bi-cart-plus mr-2"></i>Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                productGrid.append(productCard);
+            });
+
+            // Update Swiper
+            if (productsSwiper) {
+                productsSwiper.update();
+            }
+        }
+        
+        // Render deals
+        function renderDeals() {
+            const dealsSection = $('#deals-section');
+            dealsSection.empty();
+            
+            const deals = allProducts.slice().sort(() => 0.5 - Math.random()).slice(0, 10);
+            
+            if (deals.length === 0) {
+                dealsSection.html('<div class="swiper-slide"><div class="text-center py-8 text-gray-500">No deals available</div></div>');
+                return;
+            }
+            
+            deals.forEach(product => {
+                const discount = Math.floor(Math.random() * 50) + 20;
+                const dealPrice = (product.price * (100 - discount) / 100).toFixed(2);
+                
+                const dealCard = `
+                    <div class="swiper-slide">
+                        <div class="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 w-48 flex-shrink-0 hover:shadow-md transition-shadow">
+                            <div class="relative h-32 bg-white flex items-center justify-center p-4">
+                                <img src="${product.image}" alt="${product.title}" class="max-h-full max-w-full object-contain">
+                                <div class="absolute top-0 right-0 bg-secondary text-white text-xs px-2 py-1">
+                                    ${discount}% OFF
+                                </div>
+                            </div>
+                            <div class="p-3 text-center">
+                                <h4 class="text-sm font-medium text-gray-800 truncate">${product.title}</h4>
+                                <div class="text-xs text-gray-500 mt-1">$${dealPrice}</div>
+                                <button class="mt-2 w-full bg-primary text-white px-3 py-1 rounded text-sm hover:bg-blue-700 add-to-cart transition-colors" data-id="${product.id}">
+                                    <i class="bi bi-cart-plus mr-1"></i>Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                dealsSection.append(dealCard);
+            });
+        }
+        
+        // Helper function to render rating stars
+        function renderRating(rate) {
+            let stars = '';
+            const fullStars = Math.floor(rate);
+            const hasHalfStar = rate % 1 >= 0.5;
+            
+            for (let i = 0; i < fullStars; i++) {
+                stars += '<i class="bi bi-star-fill"></i>';
+            }
+            if (hasHalfStar) {
+                stars += '<i class="bi bi-star-half"></i>';
+            }
+            for (let i = 0; i < 5 - fullStars - (hasHalfStar ? 1 : 0); i++) {
+                stars += '<i class="bi bi-star"></i>';
+            }
+            
+            return stars;
+        }
+        
+        // Update cart items
+        function updateCartItems() {
+            const cartContent = $('#cart-items');
+            const mobileCartContent = $('#mobile-cart-items');
+            const cartSummary = $('#cart-summary');
+            
+            // Clear existing content
+            cartContent.empty();
+            mobileCartContent.empty();
+            
+            if (cart.length === 0) {
+                cartContent.html(`
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="bi bi-cart-x text-4xl mb-2"></i>
+                        <p>Your cart is empty</p>
+                    </div>
+                `);
+                mobileCartContent.html(`
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="bi bi-cart-x text-4xl mb-2"></i>
+                        <p>Your cart is empty</p>
+                    </div>
+                `);
+                cartSummary.addClass('hidden');
+                return;
+            }
+            
+            cartSummary.removeClass('hidden');
+            
+            // Calculate totals
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+            const total = subtotal;
+            
+            // Update summary
+            $('#cart-subtotal').text(`$${subtotal.toFixed(2)}`);
+            $('#cart-total').text(`$${total.toFixed(2)}`);
+            $('#mobile-cart-total').text(`$${total.toFixed(2)}`);
+            
+            // Render cart items
+            cart.forEach(item => {
+                const cartItem = `
+                    <div class="flex items-center p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <div class="w-16 h-16 flex-shrink-0">
+                            <img src="${item.image}" alt="${item.title}" class="w-full h-full object-contain" loading="lazy">
+                        </div>
+                        <div class="ml-4 flex-grow">
+                            <h4 class="text-sm font-medium text-gray-800">${item.title}</h4>
+                            <div class="text-sm text-gray-500">$${item.price} x ${item.quantity || 1}</div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button class="text-gray-400 hover:text-red-500 remove-from-cart transition-colors" data-id="${item.id}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            <div class="flex items-center border rounded">
+                                <button class="px-2 py-1 text-gray-600 hover:bg-gray-100 decrease-quantity" data-id="${item.id}">-</button>
+                                <span class="px-2 py-1 quantity">${item.quantity || 1}</span>
+                                <button class="px-2 py-1 text-gray-600 hover:bg-gray-100 increase-quantity" data-id="${item.id}">+</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                cartContent.append(cartItem);
+                mobileCartContent.append(cartItem);
+            });
+            
+            saveToLocalStorage();
+        }
+        
+        // Update cart count
+        function updateCartCount() {
+            const count = cart.reduce((total, item) => total + (item.quantity || 1), 0);
+            $('#cart-count, #mobile-cart-count, #sidebar-cart-count, #mobile-panel-cart-count').text(count);
+        }
+        
+        // Add to cart functionality
+        $(document).on('click', '.add-to-cart', function() {
+            const productId = $(this).data('id');
+            const productCard = $(this).closest('.product-card');
+            
+            // Add bounce animation
+            productCard.addClass('animate-bounce');
+            setTimeout(() => {
+                productCard.removeClass('animate-bounce');
+            }, 500);
+            
+            // Pulse animation for cart icon
+            $('#cart-count, #mobile-cart-count, #sidebar-cart-count, #mobile-panel-cart-count').addClass('animate-bounce');
+            setTimeout(() => {
+                $('#cart-count, #mobile-cart-count, #sidebar-cart-count, #mobile-panel-cart-count').removeClass('animate-bounce');
+            }, 500);
+            
+            // Get product details from API
+            $.get(`https://fakestoreapi.com/products/${productId}`, function(product) {
+                // Check if product already in cart
+                const existingItem = cart.find(item => item.id === product.id);
+                
+                if (existingItem) {
+                    existingItem.quantity = (existingItem.quantity || 1) + 1;
+                } else {
+                    product.quantity = 1;
+                    cart.push(product);
+                }
+                
+                updateCartCount();
+                updateCartItems();
+                showNotification(`${product.title} added to cart`);
+            });
+        });
+        
+        // Remove from cart
+        $(document).on('click', '.remove-from-cart', function() {
+            const productId = $(this).data('id');
+            const existingIndex = cart.findIndex(item => item.id === productId);
+            
+            if (existingIndex >= 0) {
+                const removedItem = cart[existingIndex];
+                cart.splice(existingIndex, 1);
+                updateCartCount();
+                updateCartItems();
+                showNotification(`${removedItem.title} removed from cart`, 'info');
+            }
+        });
+        
+        // Quantity controls
+        $(document).on('click', '.increase-quantity', function() {
+            const productId = $(this).data('id');
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity = (item.quantity || 1) + 1;
+                updateCartCount();
+                updateCartItems();
+                showNotification('Quantity updated', 'info');
+            }
+        });
+        
+        $(document).on('click', '.decrease-quantity', function() {
+            const productId = $(this).data('id');
+            const item = cart.find(item => item.id === productId);
+            if (item && item.quantity > 1) {
+                item.quantity--;
+                updateCartCount();
+                updateCartItems();
+                showNotification('Quantity updated', 'info');
+            }
+        });
+        
+        // Wishlist functionality
+        $(document).on('click', '.wishlist-btn', function() {
+            const productId = $(this).data('id');
+            const icon = $(this).find('i');
+            
+            // Check if product is already in wishlist
+            const existingIndex = wishlist.findIndex(item => item.id === productId);
+            
+            if (existingIndex >= 0) {
+                // Remove from wishlist
+                wishlist.splice(existingIndex, 1);
+                icon.removeClass('bi-heart-fill text-red-500').addClass('bi-heart');
+                showNotification('Item removed from wishlist');
+            } else {
+                // Add to wishlist
+                const product = allProducts.find(p => p.id === productId);
+                if (product) {
+                    wishlist.push(product);
+                    icon.removeClass('bi-heart').addClass('bi-heart-fill text-red-500');
+                    showNotification('Item added to wishlist');
+                }
+            }
+            updateWishlistContent();
+        });
+
+        // Update wishlist content
+        function updateWishlistContent() {
+            const wishlistContent = $('#wishlist-content');
+            wishlistContent.empty();
+
+            if (wishlist.length === 0) {
+                wishlistContent.html('<div class="text-center py-8 text-gray-500">Your wishlist is empty</div>');
+                return;
+            }
+
+            wishlist.forEach(product => {
+                const wishlistItem = `
+                    <div class="flex items-center p-4 border-b border-gray-100">
+                        <div class="w-16 h-16 flex-shrink-0">
+                            <img src="${product.image}" alt="${product.title}" class="w-full h-full object-contain">
+                        </div>
+                        <div class="ml-4 flex-grow">
+                            <h4 class="text-sm font-medium text-gray-800">${product.title}</h4>
+                            <div class="text-sm text-gray-500">$${product.price}</div>
+                        </div>
+                        <div class="flex items-center">
+                            <button class="text-gray-400 hover:text-red-500 remove-from-wishlist" data-id="${product.id}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            <button class="ml-2 bg-primary text-white px-3 py-1 rounded text-sm hover:bg-blue-700 add-to-cart" data-id="${product.id}">
+                                <i class="bi bi-cart-plus mr-1"></i>Add
+                            </button>
+                        </div>
+                    </div>
+                `;
+                wishlistContent.append(wishlistItem);
+            });
+        }
+
+        // Remove from wishlist
+        $(document).on('click', '.remove-from-wishlist', function() {
+            const productId = $(this).data('id');
+            const existingIndex = wishlist.findIndex(item => item.id === productId);
+            
+            if (existingIndex >= 0) {
+                wishlist.splice(existingIndex, 1);
+                updateWishlistContent();
+                // Update wishlist icon in product cards
+                $(`.wishlist-btn[data-id="${productId}"] i`).removeClass('bi-heart-fill text-red-500').addClass('bi-heart');
+                showNotification('Item removed from wishlist');
+            }
+        });
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+            
+            const notification = $(`
+                <div class="fixed bottom-4 right-4 ${colors[type]} text-white px-4 py-2 rounded shadow-lg transform transition-all duration-300 translate-y-full flex items-center">
+                    <i class="bi ${type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-exclamation-circle' : 'bi-info-circle'} mr-2"></i>
+                    ${message}
+                </div>
+            `);
+            
+            $('body').append(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.css('transform', 'translateY(0)');
+            }, 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.css('transform', 'translateY(full)');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Save state before unload
+        $(window).on('beforeunload', function() {
+            saveToLocalStorage();
+        });
+
+        // Handle offline/online status
+        $(window).on('online offline', function() {
+            if (navigator.onLine) {
+                showNotification('You are back online!', 'info');
+                fetchProducts();
+            } else {
+                showNotification('You are offline. Some features may be limited.', 'error');
+            }
+        });
+
+        // Handle image loading errors
+        function handleImageError(img) {
+            const text = img.alt || 'Product Image';
+            const color = Math.floor(Math.random() * 16777215).toString(16);
+            img.src = `https://dummyimage.com/400x400/${color}/ffffff&text=${encodeURIComponent(text)}`;
+        }
+
+        // Add global image error handler
+        document.addEventListener('error', function(e) {
+            if (e.target.tagName.toLowerCase() === 'img') {
+                handleImageError(e.target);
+            }
+        }, true);
+    });
+    </script>
+</body>
+</html>
